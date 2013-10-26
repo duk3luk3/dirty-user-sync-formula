@@ -1,0 +1,7 @@
+dirty-users:
+  master: nfs-master
+  master_uri: nfs-master.localdomain
+  homesdir: /home
+  clients:
+    - slave1.localdomain
+    - slave2.localdomain
