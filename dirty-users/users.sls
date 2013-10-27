@@ -1,9 +1,6 @@
-#!jinja|yaml
-
 include:
-  dirty-users
-
-{% if grains['id'] == pillar.get('nfs',{}).get('master') %}
+  - dirty-users
+{% if grains['id'] == pillar['dirty-users']['master'] %}
 /etc/exports.d:
   file.directory:
     - user: root
@@ -15,19 +12,23 @@ include:
     - user: root
     - group: root
     - mode: 644
+    - source: salt://dirty-users/exports
     - template: jinja
-    - contents: {{ pillar['dirty-users']['homesdir'] }} {% for client in pillar['dirty-users']['clients'] %} {{ client }}(rw) {% endfor %}
+    - contents: {{ pillar['dirty-users']['homesdir'] }} {% for client in pillar['dirty-users']['clients'] %} {{ client }}(rw){% endfor %}
     - require:
-        - file.directory: /etc/exports.d
-        - pkg: nfs-kernel-server
+      - file.directory: /etc/exports.d
+      - pkg: nfs-kernel-server
+    - watch_in:
+      - service: nfs-kernel-server
+
 {% else %}
 /etc/passwd:
   file.managed:
-    source: salt://dirty-users/passwd
+    - source: salt://dirty-users/passwd
 
 /etc/group:
   file.managed:
-    source: salt://dirty-users/group
+    - source: salt://dirty-users/group
 
 {{ pillar['dirty-users']['homesdir'] }}:
   file.directory:
@@ -42,6 +43,4 @@ include:
     - require:
       - file: {{ pillar['dirty-users']['homesdir'] }}
       - pkg: nfs-common
-
-
 {% endif %}
